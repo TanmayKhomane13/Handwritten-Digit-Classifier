@@ -81,14 +81,19 @@ def predict_custom_image_cv(model, image_path):
     return predicted.item()
 # ==================================================================
 
-class DigitClassifier(nn.Module):
-    # a single layer softmax classifier
-    def __init__(self, input_size, output_size):
-        super(DigitClassifier, self).__init__()
-        self.linear = nn.Linear(input_size, output_size) # one fully connected dense layer
+class BetterClassifier(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super(BetterClassifier, self).__init__()
+        self.fc1 = nn.Linear(input_size, hidden_size)
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(hidden_size, output_size)
     
-    def forward(self, x): # calculates the raw score for each class
-        return self.linear(x)
+    def forward(self, x):
+        out = self.fc1(x)
+        out = self.relu(out)
+        out = self.fc2(out)
+        return out
+
 
 # training sets
 train_dataset = dsets.MNIST(root = './data', train = True, transform = transforms.ToTensor(), download = True)
@@ -104,7 +109,7 @@ test_loader = torch.utils.data.DataLoader(dataset = test_dataset, batch_size = 1
 input_dim = 28 * 28
 output_dim = 10
 
-model = DigitClassifier(input_dim, 128, output_dim)
+model = BetterClassifier(input_dim, 128, output_dim)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr = 0.1)
 
